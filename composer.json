@@ -1,9 +1,11 @@
 {
-  "name": "zoom/zoom-lib-php",
+  "name": "rignet/zoom-lib-php",
   "type": "library",
-  "description": "Zoom PHP Library",
+  "description": "Zoom PHP Library modified for RigNet, Inc.",
   "keywords": ["zoom","video","api"],
   "license": "MIT",
+  "source": "https://github.com/rignet/zoom-lib-php.git",
+  "version": "0.2",
   "require": {
     "php": ">=5.4.0"
   },
@@ -16,6 +18,10 @@
     {
       "name": "Joshua Woodward",
       "email": "joshua.woodward@zoom.us"
+    },
+    {
+      "name": "Cai Black",
+      "email": "cai.black@rig.net"
     }
   ]
 }
