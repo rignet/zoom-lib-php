@@ -1,13 +1,76 @@
 <?php
 /*Zoom Video Communications, Inc. 2015*/
 /*Zoom Support*/
+namespace Rignet\Zoom;
 
-class ZoomAPI{
+class ZoomAPI
+{
+	/**
+	 * @const MEETING_TYPE_INSTANT instant meeting
+	 */
+	const MEETING_TYPE_INSTANT         = 1;
+
+	/**
+	 * @const MEETING_TYPE_NORMAL normal scheduled meeting
+	 */
+	const MEETING_TYPE_NORMAL          = 2;
+
+	/**
+	 * @const MEETING_TYPE_RECURRING recurring meeting with no fixed time
+	 */
+	const MEETING_TYPE_RECURRING       = 3;
+
+	/**
+	 * @const MEETING_TYPE_RECURRING_FIXED recurring meeting with fixed time
+	 */
+	const MEETING_TYPE_RECURRING_FIXED = 8;
+
 
 	/*The API Key, Secret, & URL will be used in every function.*/
 	private $api_key = 'Use setAPIKey to set your own API key';
 	private $api_secret = 'Use setAPISecret to set your own API secret';
 	private $api_url = 'https://api.zoom.us/v1/';
+
+    /**
+     * @var Rignet\Zoom\ZoomAPI
+     */
+    private static $instance;
+
+	/**
+	 * gets the instance via lazy initialization (created on first usage)
+	 *
+	 * @return Rignet\Zoom\ZoomAPI
+	 */
+	public static function getInstance()
+	{
+		if (null === static::$instance) {
+			static::$instance = new static();
+		}
+
+		return static::$instance;
+	}
+
+	/**
+	 * is not allowed to call from outside to prevent from creating multiple instances,
+	 * to use the singleton, you have to obtain the instance from ZoomAPI::getInstance() instead
+	 */
+	private function __construct()
+	{
+	}
+
+	/**
+	 * prevent the instance from being cloned (which would create a second instance of it)
+	 */
+	private function __clone()
+	{
+	}
+
+	/**
+	 * prevent from being unserialized (which would create a second instance of it)
+	 */
+	private function __wakeup()
+	{
+	}
 
 	/**
 	 * Set API key
@@ -15,7 +78,8 @@ class ZoomAPI{
 	 * @param string $api_key API key (REQUIRED)
 	 * @return string API key
 	 */
-	public function setAPIKey($api_key){
+	public function setAPIKey($api_key)
+	{
 		$this->api_key = $api_key;
 		return $this->api_key;
 	}
@@ -26,14 +90,16 @@ class ZoomAPI{
 	 * @param string $api_secret API secret (REQUIRED)
 	 * @return string API secret
 	 */
-	public function setAPISecret($api_secret){
+	public function setAPISecret($api_secret)
+	{
 		$this->api_secret = $api_secret;
 		return $this->api_secret;
 	}
 	
 	/*Function to send HTTP POST Requests*/
 	/*Used by every function below to make HTTP POST call*/
-	function sendRequest($calledFunction, $data){
+	public function sendRequest($calledFunction, $data)
+	{
 		/*Creates the endpoint URL*/
 		$request_url = $this->api_url.$calledFunction;
 
@@ -63,7 +129,7 @@ class ZoomAPI{
 		echo $request_url;
 		var_dump($data);
 		var_dump($response);
-		if(!$response){
+		if(!$response) {
 			return false;
 		}
 		/*Return the data in JSON format*/
@@ -71,14 +137,16 @@ class ZoomAPI{
 	}
 	/*Functions for management of users*/
 
-	function createAUser(){		
+	public function createAUser()
+	{		
 		$createAUserArray = array();
 		$createAUserArray['email'] = $_POST['userEmail'];
 		$createAUserArray['type'] = $_POST['userType'];
 		return $this->sendRequest('user/create', $createAUserArray);
 	}   
 
-	function autoCreateAUser(){
+	public function autoCreateAUser()
+	{
 	  $autoCreateAUserArray = array();
 	  $autoCreateAUserArray['email'] = $_POST['userEmail'];
 	  $autoCreateAUserArray['type'] = $_POST['userType'];
@@ -86,56 +154,65 @@ class ZoomAPI{
 	  return $this->sendRequest('user/autocreate', $autoCreateAUserArray);
 	}
 
-	function custCreateAUser(){
+	public function custCreateAUser()
+	{
 	  $custCreateAUserArray = array();
 	  $custCreateAUserArray['email'] = $_POST['userEmail'];
 	  $custCreateAUserArray['type'] = $_POST['userType'];
 	  return $this->sendRequest('user/custcreate', $custCreateAUserArray);
 	}  
 
-	function deleteAUser(){
+	public function deleteAUser()
+	{
 	  $deleteAUserArray = array();
 	  $deleteAUserArray['id'] = $_POST['userId'];
 	  return $this->sendRequest('user/delete', $deleteUserArray);
 	}     
 
-	function listUsers(){
+	public function listUsers()
+	{
 	  $listUsersArray = array();
 	  return $this->sendRequest('user/list', $listUsersArray);
 	}   
 
-	function listPendingUsers(){
+	public function listPendingUsers()
+	{
 	  $listPendingUsersArray = array();
 	  return $this->sendRequest('user/pending', $listPendingUsersArray);
 	}    
 
-	function getUserInfo(){
+	public function getUserInfo()
+	{
 	  $getUserInfoArray = array();
 	  $getUserInfoArray['id'] = $_POST['userId'];
 	  return $this->sendRequest('user/get',$getUserInfoArray);
 	}   
 
-	function getUserInfoByEmail(){
+	public function getUserInfoByEmail()
+	{
 	  $getUserInfoByEmailArray = array();
 	  $getUserInfoByEmailArray['email'] = $_POST['userEmail'];
 	  $getUserInfoByEmailArray['login_type'] = $_POST['userLoginType'];
 	  return $this->sendRequest('user/getbyemail',$getUserInfoByEmailArray);
 	}  
 
-	function updateUserInfo(){
+	public function updateUserInfo()
+	{
 	  $updateUserInfoArray = array();
 	  $updateUserInfoArray['id'] = $_POST['userId'];
 	  return $this->sendRequest('user/update',$updateUserInfoArray);
 	}  
 
-	function updateUserPassword(){
+	public function updateUserPassword()
+	{
 	  $updateUserPasswordArray = array();
 	  $updateUserPasswordArray['id'] = $_POST['userId'];
 	  $updateUserPasswordArray['password'] = $_POST['userNewPassword'];
 	  return $this->sendRequest('user/updatepassword', $updateUserPasswordArray);
 	}      
 
-	function setUserAssistant(){
+	public function setUserAssistant()
+	{
 	  $setUserAssistantArray = array();
 	  $setUserAssistantArray['id'] = $_POST['userId'];
 	  $setUserAssistantArray['host_email'] = $_POST['userEmail'];
@@ -143,7 +220,8 @@ class ZoomAPI{
 	  return $this->sendRequest('user/assistant/set', $setUserAssistantArray);
 	}     
 
-	function deleteUserAssistant(){
+	public function deleteUserAssistant()
+	{
 	  $deleteUserAssistantArray = array();
 	  $deleteUserAssistantArray['id'] = $_POST['userId'];
 	  $deleteUserAssistantArray['host_email'] = $_POST['userEmail'];
@@ -151,14 +229,16 @@ class ZoomAPI{
 	  return $this->sendRequest('user/assistant/delete',$deleteUserAssistantArray);
 	}   
 
-	function revokeSSOToken(){
+	public function revokeSSOToken()
+	{
 	  $revokeSSOTokenArray = array();
 	  $revokeSSOTokenArray['id'] = $_POST['userId'];
 	  $revokeSSOTokenArray['email'] = $_POST['userEmail'];
 	  return $this->sendRequest('user/revoketoken', $revokeSSOTokenArray);
 	}      
 
-	function deleteUserPermanently(){
+	public function deleteUserPermanently()
+	{
 	  $deleteUserPermanentlyArray = array();
 	  $deleteUserPermanentlyArray['id'] = $_POST['userId'];
 	  $deleteUserPermanentlyArray['email'] = $_POST['userEmail'];
@@ -166,49 +246,90 @@ class ZoomAPI{
 	}               
 
 	/*Functions for management of meetings*/
-	function createAMeeting(){
-	  $createAMeetingArray = array();
-	  $createAMeetingArray['host_id'] = $_POST['userId'];
-	  $createAMeetingArray['topic'] = $_POST['meetingTopic'];
-	  $createAMeetingArray['type'] = $_POST['meetingType'];
-	  return $this->sendRequest('meeting/create', $createAMeetingArray);
+
+	/**
+	 * Create a meeting.
+	 *
+	 * @param string[] $params Associative array of meeting creation parameters:
+	 *                         host_id:    Meeting host user ID
+	 *                         topic:      Meeting topic. Max of 300 characters.
+	 *                         type:       Meeting type: 1 means instant meeting (Only used
+	 *                                     for host to start it as soon as created). 2 means
+	 *                                     normal scheduled meeting. 3 means a recurring meeting
+	 *                                     with no fixed time. 8 means a recurring meeting with
+	 *                                     fixed time.
+	 *                                     Default: 2
+	 *                         start_time: (optional) Meeting start time in ISO datetime format.
+	 *                                     For scheduled meeting and recurring meeting with fixed
+	 *                                     time. Should be UTC time, such as 2012-11-25T12:00:00Z.
+	 *                         password:   (optional) Meeting password. Password may only contain
+	 *                                     the following characters: [a-z A-Z 0-9 @ - _ *].
+	 *                                     Max of 10 characters.
+     */
+	public function createAMeeting(Array $params = [])
+	{
+	  if (!isset($params['host_id'])) { return ['error' => 'Missing host_id']; }
+	  if (!isset($params['topic'])) { return ['error' => 'Missing host_id']; }
+	  if (!isset($params['type'])) { $params['type'] = self::MEETING_TYPE_NORMAL; }
+	  if (!isset($params['start_time'])) {
+	    /* Generate a meeting start time */
+	    $d = new \DateTime('now',  new \DateTimeZone( 'UTC' ) );
+	    $params['start_time'] = str_replace("'", '', var_export( $d->format('Y-m-d\TH:i:s\Z') , true) );
+	  }
+	  if (!isset($params['password'])) {
+	    /* Generate a 8 to 10 character hex string for use as the meeting passwotrd. */
+	    $params['password'] = dechex(rand(127, 255) * crc32( uniqid('', true) ));
+	  }
+
+	  //$createAMeetingArray = [];
+	  //$createAMeetingArray['host_id'] = $_POST['userId'];
+	  //$createAMeetingArray['topic'] = $_POST['meetingTopic'];
+	  //$createAMeetingArray['type'] = $_POST['meetingType'];
+	  //return $this->sendRequest('meeting/create', $createAMeetingArray);
+	  return $this->sendRequest('meeting/create', $params);
 	}
 
-	function deleteAMeeting(){
+	public function deleteAMeeting()
+	{
 	  $deleteAMeetingArray = array();
 	  $deleteAMeetingArray['id'] = $_POST['meetingId'];
 	  $deleteAMeetingArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('meeting/delete', $deleteAMeetingArray);
 	}
 
-	function listMeetings(){
+	public function listMeetings()
+	{
 	  $listMeetingsArray = array();
 	  $listMeetingsArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('meeting/list',$listMeetingsArray);
 	}
 
-	function getMeetingInfo(){
+	public function getMeetingInfo()
+	{
       $getMeetingInfoArray = array();
 	  $getMeetingInfoArray['id'] = $_POST['meetingId'];
 	  $getMeetingInfoArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('meeting/get', $getMeetingInfoArray);
 	}
 
-	function updateMeetingInfo(){
+	public function updateMeetingInfo()
+	{
 	  $updateMeetingInfoArray = array();
 	  $updateMeetingInfoArray['id'] = $_POST['meetingId'];
 	  $updateMeetingInfoArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('meeting/update', $updateMeetingInfoArray);
 	}
 
-	function endAMeeting(){
+	public function endAMeeting()
+	{
       $endAMeetingArray = array();
 	  $endAMeetingArray['id'] = $_POST['meetingId'];
 	  $endAMeetingArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('meeting/end', $endAMeetingArray);
 	}
 
-	function listRecording(){
+	public function listRecording()
+	{
       $listRecordingArray = array();
 	  $listRecordingArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('recording/list', $listRecordingArray);
@@ -216,21 +337,24 @@ class ZoomAPI{
 
 
 	/*Functions for management of reports*/
-	function getDailyReport(){
+	public function getDailyReport()
+	{
 	  $getDailyReportArray = array();
 	  $getDailyReportArray['year'] = $_POST['year'];
 	  $getDailyReportArray['month'] = $_POST['month'];
 	  return $this->sendRequest('report/getdailyreport', $getDailyReportArray);
 	}
 
-	function getAccountReport(){
+	public function getAccountReport()
+	{
 	  $getAccountReportArray = array();
 	  $getAccountReportArray['from'] = $_POST['from'];
 	  $getAccountReportArray['to'] = $_POST['to'];
 	  return $this->sendRequest('report/getaccountreport', $getAccountReportArray);
 	}
 
-	function getUserReport(){
+	public function getUserReport()
+	{
 	  $getUserReportArray = array();
 	  $getUserReportArray['user_id'] = $_POST['userId'];
 	  $getUserReportArray['from'] = $_POST['from'];
@@ -240,41 +364,47 @@ class ZoomAPI{
 
 
 	/*Functions for management of webinars*/
-	function createAWebinar(){
+	public function createAWebinar()
+	{
 	  $createAWebinarArray = array();
 	  $createAWebinarArray['host_id'] = $_POST['userId'];
 	  $createAWebinarArray['topic'] = $_POST['topic'];
 	  return $this->sendRequest('webinar/create',$createAWebinarArray);
 	}
 
-	function deleteAWebinar(){
+	public function deleteAWebinar()
+	{
 	  $deleteAWebinarArray = array();
 	  $deleteAWebinarArray['id'] = $_POST['webinarId'];
 	  $deleteAWebinarArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('webinar/delete',$deleteAWebinarArray);
 	}
 
-	function listWebinars(){
+	public function listWebinars()
+	{
 	  $listWebinarsArray = array();
 	  $listWebinarsArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('webinar/list',$listWebinarsArray);
 	}
 
-	function getWebinarInfo(){
+	public function getWebinarInfo()
+	{
 	  $getWebinarInfoArray = array();
 	  $getWebinarInfoArray['id'] = $_POST['webinarId'];
 	  $getWebinarInfoArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('webinar/get',$getWebinarInfoArray);
 	}
 
-	function updateWebinarInfo(){
+	public function updateWebinarInfo()
+	{
 	  $updateWebinarInfoArray = array();
 	  $updateWebinarInfoArray['id'] = $_POST['webinarId'];
 	  $updateWebinarInfoArray['host_id'] = $_POST['userId'];
 	  return $this->sendRequest('webinar/update',$updateWebinarInfoArray);
 	}
 
-	function endAWebinar(){
+	public function endAWebinar()
+	{
 	  $endAWebinarArray = array();
 	  $endAWebinarArray['id'] = $_POST['webinarId'];
 	  $endAWebinarArray['host_id'] = $_POST['userId'];
