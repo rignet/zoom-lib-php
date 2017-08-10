@@ -8,22 +8,37 @@ class ZoomAPI
 	/**
 	 * @const MEETING_TYPE_INSTANT instant meeting
 	 */
-	const MEETING_TYPE_INSTANT         = 1;
+	const MEETING_TYPE_INSTANT = 1;
 
 	/**
 	 * @const MEETING_TYPE_NORMAL normal scheduled meeting
 	 */
-	const MEETING_TYPE_NORMAL          = 2;
+	const MEETING_TYPE_NORMAL = 2;
 
 	/**
-	 * @const MEETING_TYPE_RECURRING recurring meeting with no fixed time
+	 * @const MEETING_TYPE_RECURRING recurring meeting without fixed time
 	 */
-	const MEETING_TYPE_RECURRING       = 3;
+	const MEETING_TYPE_RECURRING = 3;
+
+	/**
+	 * @const MEETING_TYPE_WEBINAR normal webinar
+	 */
+	const MEETING_TYPE_WEBINAR = 5;
+
+	/**
+	 * @const MEETING_TYPE_WEBINAR_RECURRING recurring webinar without fixed time
+	 */
+	const MEETING_TYPE_WEBINAR_RECURRING = 6;
 
 	/**
 	 * @const MEETING_TYPE_RECURRING_FIXED recurring meeting with fixed time
 	 */
 	const MEETING_TYPE_RECURRING_FIXED = 8;
+
+	/**
+	 * @const MEETING_TYPE_WEBINAR_RECURRING_FIXED recurring webinar without fixed time
+	 */
+	const MEETING_TYPE_WEBINAR_RECURRING_FIXED = 9;
 
 
 	/*The API Key, Secret, & URL will be used in every function.*/
@@ -111,7 +126,9 @@ class ZoomAPI
 		$postFields = http_build_query($data);
 		/*Check to see queried fields*/
 		/*Used for troubleshooting/debugging*/
-		echo $postFields;
+		if (defined('DEBUG') && DEBUG === true) {
+	      echo $postFields;
+	    }
 
 		/*Preparing Query...*/
 		$ch = curl_init();
@@ -126,7 +143,9 @@ class ZoomAPI
 
 		/*Will print back the response from the call*/
 		/*Used for troubleshooting/debugging		*/
-		echo $request_url;
+		if (defined('DEBUG') && DEBUG === true) {
+	      echo $request_url;
+	    }
 		var_dump($data);
 		var_dump($response);
 		if(!$response) {
@@ -253,11 +272,12 @@ class ZoomAPI
 	 * @param string[] $params Associative array of meeting creation parameters:
 	 *                         host_id:    Meeting host user ID
 	 *                         topic:      Meeting topic. Max of 300 characters.
-	 *                         type:       Meeting type: 1 means instant meeting (Only used
-	 *                                     for host to start it as soon as created). 2 means
-	 *                                     normal scheduled meeting. 3 means a recurring meeting
-	 *                                     with no fixed time. 8 means a recurring meeting with
-	 *                                     fixed time.
+	 *                         type:       Meeting type:
+	 *                                         1: means instant meeting (Only used for host to
+	 *                                            start it as soon as created).
+	 *                                         2: means normal scheduled meeting.
+	 *                                         3: means a recurring meeting with no fixed time.
+	 *                                         8: means a recurring meeting with fixed time.
 	 *                                     Default: 2
 	 *                         start_time: (optional) Meeting start time in ISO datetime format.
 	 *                                     For scheduled meeting and recurring meeting with fixed
@@ -364,12 +384,47 @@ class ZoomAPI
 
 
 	/*Functions for management of webinars*/
-	public function createAWebinar()
+	/**
+	 * Create a webinar.
+	 *
+	 * @param string[] $params Associative array of webinar creation parameters:
+	 *                         host_id:    Webinar host user ID
+	 *                         topic:      Webinar topic. Max of 300 characters.
+	 *                         agenda:     Webinar agenda.
+	 *                         type:       Webinar type:
+	 *                                         5: webinar,
+	 *                                         6: recurrence webinar,
+	 *                                         9: recurring webinar(With Fixed Time)
+	 *                                     Default: 5
+	 *                         start_time: (optional) Webinar start time in ISO datetime format.
+	 *                                     For scheduled webinar and recurring webinar with fixed
+	 *                                     time. Should be UTC time, such as 2012-11-25T12:00:00Z.
+	 *                         password:   (optional) Webinar password. Password may only contain
+	 *                                     the following characters: [a-z A-Z 0-9 @ - _ *].
+	 *                                     Max of 10 characters.
+     */
+	public function createAWebinar(Array $params = [])
 	{
-	  $createAWebinarArray = array();
-	  $createAWebinarArray['host_id'] = $_POST['userId'];
-	  $createAWebinarArray['topic'] = $_POST['topic'];
-	  return $this->sendRequest('webinar/create',$createAWebinarArray);
+	  if (!isset($params['host_id'])) { return ['error' => 'Missing host_id']; }
+	  if (!isset($params['topic'])) { return ['error' => 'Missing host_id']; }
+	  if (!isset($params['agenda'])) { $params['agenda'] = ''; }
+	  if (!isset($params['type'])) { $params['type'] = self::webinar_TYPE_NORMAL; }
+	  if (!isset($params['start_time'])) {
+	    /* Generate a webinar start time */
+	    $d = new \DateTime('now',  new \DateTimeZone( 'UTC' ) );
+	    $params['start_time'] = str_replace("'", '', var_export( $d->format('Y-m-d\TH:i:s\Z') , true) );
+	  }
+	  if (!isset($params['password'])) {
+	    /* Generate a 8 to 10 character hex string for use as the webinar passwotrd. */
+	    $params['password'] = dechex(rand(127, 255) * crc32( uniqid('', true) ));
+	  }
+
+	  //$createAWebinarArray = [];
+	  //$createAWebinarArray['host_id'] = $_POST['userId'];
+	  //$createAWebinarArray['topic'] = $_POST['webinarTopic'];
+	  //$createAWebinarArray['type'] = $_POST['webinarType'];
+	  //return $this->sendRequest('webinar/create', $createAWebinarArray);
+	  return $this->sendRequest('webinar/create', $params);
 	}
 
 	public function deleteAWebinar()
