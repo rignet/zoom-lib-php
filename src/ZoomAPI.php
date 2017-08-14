@@ -145,9 +145,9 @@ class ZoomAPI
 		/*Used for troubleshooting/debugging		*/
 		if (defined('DEBUG') && DEBUG === true) {
 	      echo $request_url;
+		  var_dump($data);
+		  var_dump($response);
 	    }
-		var_dump($data);
-		var_dump($response);
 		if(!$response) {
 			return false;
 		}
@@ -200,19 +200,46 @@ class ZoomAPI
 	  return $this->sendRequest('user/pending', $listPendingUsersArray);
 	}    
 
-	public function getUserInfo()
+	/**
+	 * Get user info.
+	 *
+	 * @param string[] $params Associative array of user query parameters:
+	 *                         id: Zoom user ID
+     */
+	public function getUserInfo(Array $params = [])
 	{
-	  $getUserInfoArray = array();
-	  $getUserInfoArray['id'] = $_POST['userId'];
-	  return $this->sendRequest('user/get',$getUserInfoArray);
+	  if (!isset($params['id'])) { return ['error' => 'Missing user id']; }
+
+	  //$getUserInfoArray = array();
+	  //$getUserInfoArray['id'] = $_POST['userId'];
+	  //return $this->sendRequest('user/get',$getUserInfoArray);
+
+	  return $this->sendRequest('user/get',$params);
 	}   
 
-	public function getUserInfoByEmail()
+	/**
+	 * Get user info using email address.
+	 *
+	 * @param string[] $params Associative array of user query parameters:
+	 *                         email:      email address associated with a Zoom user account
+	 *                         login_type: (optional) Login type of the email, int
+	 *                                          SNS_FACEBOOK = 0;
+	 *                                          SNS_GOOGLE   = 1;
+	 *                                          SNS_API      = 99;
+	 *                                          SNS_ZOOM     = 100;
+	 *                                          SNS_SSO      = 101;
+     */
+	public function getUserInfoByEmail(Array $params = [])
 	{
-	  $getUserInfoByEmailArray = array();
-	  $getUserInfoByEmailArray['email'] = $_POST['userEmail'];
-	  $getUserInfoByEmailArray['login_type'] = $_POST['userLoginType'];
-	  return $this->sendRequest('user/getbyemail',$getUserInfoByEmailArray);
+	  if (!isset($params['email'])) { return ['error' => 'Missing user email address']; }
+	  if (isset($params['login_type']) && empty($params['login_type'])) { unset($params['login_type']); }
+
+	  //$getUserInfoByEmailArray = array();
+	  //$getUserInfoByEmailArray['email'] = $_POST['userEmail'];
+	  //$getUserInfoByEmailArray['login_type'] = $_POST['userLoginType'];
+	  //return $this->sendRequest('user/getbyemail',$getUserInfoByEmailArray);
+
+	  return $this->sendRequest('user/getbyemail',$params);
 	}  
 
 	public function updateUserInfo()
@@ -278,7 +305,7 @@ class ZoomAPI
 	 *                                         2: means normal scheduled meeting.
 	 *                                         3: means a recurring meeting with no fixed time.
 	 *                                         8: means a recurring meeting with fixed time.
-	 *                                     Default: 2
+	 *                                     Default: 2 // self::MEETING_TYPE_NORMAL
 	 *                         start_time: (optional) Meeting start time in ISO datetime format.
 	 *                                     For scheduled meeting and recurring meeting with fixed
 	 *                                     time. Should be UTC time, such as 2012-11-25T12:00:00Z.
@@ -286,11 +313,10 @@ class ZoomAPI
 	 *                                     the following characters: [a-z A-Z 0-9 @ - _ *].
 	 *                                     Max of 10 characters.
      */
-	public function createAMeeting(Array $params = [])
+	public function createAMeeting(Array $params = ['type' => self::MEETING_TYPE_NORMAL])
 	{
 	  if (!isset($params['host_id'])) { return ['error' => 'Missing host_id']; }
 	  if (!isset($params['topic'])) { return ['error' => 'Missing host_id']; }
-	  if (!isset($params['type'])) { $params['type'] = self::MEETING_TYPE_NORMAL; }
 	  if (!isset($params['start_time'])) {
 	    /* Generate a meeting start time */
 	    $d = new \DateTime('now',  new \DateTimeZone( 'UTC' ) );
@@ -306,6 +332,7 @@ class ZoomAPI
 	  //$createAMeetingArray['topic'] = $_POST['meetingTopic'];
 	  //$createAMeetingArray['type'] = $_POST['meetingType'];
 	  //return $this->sendRequest('meeting/create', $createAMeetingArray);
+
 	  return $this->sendRequest('meeting/create', $params);
 	}
 
@@ -317,11 +344,28 @@ class ZoomAPI
 	  return $this->sendRequest('meeting/delete', $deleteAMeetingArray);
 	}
 
-	public function listMeetings()
+	/**
+	 * List meetings of a particular user
+	 *
+	 * @param string[] $params Associative array of meeting query parameters:
+	 *                         host_id:     Meeting host user ID
+	 *                         page_size:   (optional) The amount of records returns within a single
+	 *                                      API call. Defaults to 30. Max of 300 meetings.
+	 *                                      Default: 30
+	 *                         page_number: (optional) Current page number of returned records.
+	 *                                      Default to 1.
+	 *                                      Default: 1
+     */
+	public function listMeetings(Array $params = ['page_size' => 30, 'page_number' => 1])
 	{
-	  $listMeetingsArray = array();
-	  $listMeetingsArray['host_id'] = $_POST['userId'];
-	  return $this->sendRequest('meeting/list',$listMeetingsArray);
+	  if (!isset($params['host_id'])) { return ['error' => 'Missing host_id']; }
+	  if (isset($params['page_size']) && is_int($params['page_size']) && ($params['page_size'] > 300)) { $params['page_size'] = 300; }
+
+	  //$listMeetingsArray = array();
+	  //$listMeetingsArray['host_id'] = $_POST['userId'];
+	  //return $this->sendRequest('meeting/list',$listMeetingsArray);
+
+	  return $this->sendRequest('meeting/list',$params);
 	}
 
 	public function getMeetingInfo()
