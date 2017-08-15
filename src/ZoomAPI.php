@@ -312,6 +312,9 @@ class ZoomAPI
 	 *                         password:   (optional) Meeting password. Password may only contain
 	 *                                     the following characters: [a-z A-Z 0-9 @ - _ *].
 	 *                                     Max of 10 characters.
+	 *                         option_jbh: (optional) Join meeting before host start the meeting.
+	 *                                     Only for scheduled or recurring meetings.
+	 *                                     Default: false
      */
 	public function createAMeeting(Array $params = ['type' => self::MEETING_TYPE_NORMAL])
 	{
@@ -326,6 +329,7 @@ class ZoomAPI
 	    /* Generate a 8 to 10 character hex string for use as the meeting passwotrd. */
 	    $params['password'] = dechex(rand(127, 255) * crc32( uniqid('', true) ));
 	  }
+	  if (isset($params['option_jbh'])) { $params['option_jbh'] == 'true' ? 'true' : 'false'; }
 
 	  //$createAMeetingArray = [];
 	  //$createAMeetingArray['host_id'] = $_POST['userId'];
