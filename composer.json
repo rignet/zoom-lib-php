@@ -1,28 +1,29 @@
 {
-  "name": "rignet/zoom-lib-php",
-  "type": "library",
-  "description": "Zoom PHP Library modified for RigNet, Inc.",
-  "keywords": ["zoom","video","api"],
-  "license": "MIT",
-  "source": "https://github.com/rignet/zoom-lib-php.git",
-  "version": "0.2",
-  "require": {
-    "php": ">=5.4.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Zoom\\ZoomAPI\\": "src/"
-    }
-  },
-  "authors": [
-    {
-      "name": "Joshua Woodward",
-      "email": "joshua.woodward@zoom.us"
+    "name": "rignet/zoom-lib-php",
+    "description": "Zoom PHP Library with some additional features",
+    "version": "0.2.0",
+    "type": "library",
+    "keywords": ["zoom","video","api"],
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4.0"
     },
-    {
-      "name": "Cai Black",
-      "email": "cai.black@rig.net"
+    "autoload": {
+        "psr-4": {
+            "Zoom\\ZoomAPI\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Joshua Woodward",
+            "email": "joshua.woodward@zoom.us"
+        },
+        {
+            "name": "Cai Black",
+            "email": "cai.black@rig.net"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/rignet/zoom-lib-php.git"
     }
-  ]
 }
-
